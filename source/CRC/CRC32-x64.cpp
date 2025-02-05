@@ -460,7 +460,7 @@ std::uint32_t Checksum(
 			(sizeof(CRC32TableT::value_type) / 4) * 5,
 			(sizeof(CRC32TableT::value_type) / 4) * 6,
 			(sizeof(CRC32TableT::value_type) / 4) * 7);
-		for( ; Data.size() / 8; Data.subspan(8) )
+		for( ; Data.size() / 8; )
 		{
 			// Load in 8 bytes
 			const std::uint64_t Input64
