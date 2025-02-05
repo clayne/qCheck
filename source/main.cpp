@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 
 	// Recursive generation of sfv files is not implemented at the moment
 	// - Tue Feb  4 07:53:09 PM PST 2025
-	if( (!CurSettings.Check) && (CurSettings.RecursiveDepth.has_value()) )
+	if( (!CurSettings.Check) && (CurSettings.RecursiveDepth != 0) )
 	{
 		std::puts("Recursive generation not implemented.");
 		return EXIT_FAILURE;
@@ -150,8 +150,7 @@ int main(int argc, char* argv[])
 	for( std::intmax_t i = 0; i < argc; ++i )
 	{
 		const std::filesystem::path CurPath(argv[i]);
-		ProcessInputPath(
-			CurSettings, CurPath, CurSettings.RecursiveDepth.value_or(0LL));
+		ProcessInputPath(CurSettings, CurPath, CurSettings.RecursiveDepth);
 	}
 
 	return CurSettings.Check ? CheckSFVs(CurSettings)

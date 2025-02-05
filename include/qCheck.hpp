@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <filesystem>
-#include <optional>
 #include <vector>
 
 #include <getopt.h>
@@ -10,10 +9,10 @@
 struct Settings
 {
 	std::vector<std::filesystem::path> InputFiles;
-	std::size_t                        Threads = 2;
-	bool                               Verbose = true;
-	bool                               Check   = false;
-	std::optional<std::intmax_t>       RecursiveDepth;
+	std::size_t                        Threads        = 2;
+	std::intmax_t                      RecursiveDepth = 0;
+	bool                               Verbose        = true;
+	bool                               Check          = false;
 };
 
 extern const char* Usage;

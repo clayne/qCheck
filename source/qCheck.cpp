@@ -2,6 +2,7 @@
 
 #include <charconv>
 #include <fstream>
+#include <optional>
 #include <set>
 #include <span>
 #include <thread>
