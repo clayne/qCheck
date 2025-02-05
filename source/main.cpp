@@ -13,7 +13,9 @@
 namespace
 {
 
-void ProcessInputPath(Settings& CurSettings, const std::filesystem::path& Path)
+void ProcessInputPath(
+	Settings& CurSettings, const std::filesystem::path& Path,
+	std::intmax_t RecursiveDepth = 0)
 {
 	if( !std::filesystem::exists(Path) )
 	{
@@ -35,18 +37,15 @@ void ProcessInputPath(Settings& CurSettings, const std::filesystem::path& Path)
 		}
 		// Add .sfv files to check recursively
 		else if(
-			CurSettings.Recursive
+			(RecursiveDepth != 0)
 			&& std::filesystem::is_directory(Path, CurError) )
 		{
 			for( const std::filesystem::directory_entry& DirectoryEntry :
 				 std::filesystem::directory_iterator(Path) )
 			{
-				ProcessInputPath(CurSettings, DirectoryEntry.path());
+				ProcessInputPath(
+					CurSettings, DirectoryEntry.path(), RecursiveDepth - 1);
 			}
-		}
-		else
-		{
-			std::fprintf(stderr, "Error opening path: %s\n", Path.c_str());
 		}
 	}
 	else
@@ -79,7 +78,7 @@ int main(int argc, char* argv[])
 	}
 	// Parse Arguments
 	while(
-		(Opt = getopt_long(argc, argv, "t:crh", CommandOptions, &OptionIndex))
+		(Opt = getopt_long(argc, argv, "t:cr::h", CommandOptions, &OptionIndex))
 		!= -1 )
 	{
 		switch( Opt )
@@ -104,7 +103,27 @@ int main(int argc, char* argv[])
 		}
 		case 'r':
 		{
-			CurSettings.Recursive = true;
+			// Endless recursion when no optional argument specified
+			CurSettings.RecursiveDepth = -1;
+
+			// Try to parse optional argument
+			if( optarg != nullptr )
+			{
+				std::size_t RecursiveDepth;
+				const auto  ParseResult = std::from_chars<std::size_t>(
+                    optarg, optarg + std::strlen(optarg), RecursiveDepth);
+				if( *ParseResult.ptr != '\0' || ParseResult.ec != std::errc() )
+				{
+					std::fprintf(
+						stdout, "Invalid recursive depth count \"%s\"\n",
+						optarg);
+					return EXIT_FAILURE;
+				}
+
+				CurSettings.RecursiveDepth
+					= static_cast<std::intmax_t>(RecursiveDepth);
+			}
+
 			break;
 		}
 		case 'h':
@@ -122,7 +141,7 @@ int main(int argc, char* argv[])
 
 	// Recursive generation of sfv files is not implemented at the moment
 	// - Tue Feb  4 07:53:09 PM PST 2025
-	if( (!CurSettings.Check) && (CurSettings.Recursive) )
+	if( (!CurSettings.Check) && (CurSettings.RecursiveDepth.has_value()) )
 	{
 		std::puts("Recursive generation not implemented.");
 		return EXIT_FAILURE;
@@ -131,7 +150,8 @@ int main(int argc, char* argv[])
 	for( std::intmax_t i = 0; i < argc; ++i )
 	{
 		const std::filesystem::path CurPath(argv[i]);
-		ProcessInputPath(CurSettings, CurPath);
+		ProcessInputPath(
+			CurSettings, CurPath, CurSettings.RecursiveDepth.value_or(0LL));
 	}
 
 	return CurSettings.Check ? CheckSFVs(CurSettings)

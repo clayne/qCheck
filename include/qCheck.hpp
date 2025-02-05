@@ -10,10 +10,10 @@
 struct Settings
 {
 	std::vector<std::filesystem::path> InputFiles;
-	std::size_t                        Threads   = 2;
-	bool                               Verbose   = true;
-	bool                               Check     = false;
-	bool                               Recursive = false;
+	std::size_t                        Threads = 2;
+	bool                               Verbose = true;
+	bool                               Check   = false;
+	std::optional<std::intmax_t>       RecursiveDepth;
 };
 
 extern const char* Usage;
@@ -21,7 +21,7 @@ extern const char* Usage;
 const static struct option CommandOptions[] = {
 	{"threads", required_argument, nullptr, 't'},
 	{"check", no_argument, nullptr, 'c'},
-	{"recursive", no_argument, nullptr, 'r'},
+	{"recursive", optional_argument, nullptr, 'r'},
 	{"help", no_argument, nullptr, 'h'},
 	{nullptr, no_argument, nullptr, '\0'},
 };
