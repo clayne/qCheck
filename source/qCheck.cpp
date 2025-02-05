@@ -79,9 +79,12 @@ static std::optional<std::uint32_t>
 
 struct CheckEntry
 {
-	std::filesystem::path FilePath;
-	std::size_t           InputIndex;
-	std::uint32_t         Checksum;
+	// Source .sfv file this input file came from.
+	// Careful with the life-time!
+	const std::filesystem::path& SfvPath;
+	std::filesystem::path        FilePath;
+	std::size_t                  InputIndex;
+	std::uint32_t                Checksum;
 };
 
 static void CheckerThread(
@@ -106,7 +109,9 @@ static void CheckerThread(
 		const std::size_t EntryIndex
 			= QueueLock.fetch_add(1, std::memory_order_relaxed);
 		if( EntryIndex >= Checkqueue.size() )
+		{
 			return;
+		}
 		const CheckEntry& CurEntry = Checkqueue[EntryIndex];
 
 		const std::optional<std::uint32_t> CurSum
@@ -114,11 +119,15 @@ static void CheckerThread(
 
 		if( CurSum.has_value() )
 		{
-			const bool Valid = CurEntry.Checksum == CurSum;
+			const bool                  Valid = CurEntry.Checksum == CurSum;
+			const std::filesystem::path RelativePath
+				= CurEntry.FilePath.lexically_relative(CurEntry.SfvPath)
+					  .filename();
+
 			std::printf(
-				"\e[36m%s\t\e[33m%08X\e[37m...%s%08X\t%s\e[0m\n",
-				CurEntry.FilePath.c_str(), CurEntry.Checksum,
-				Valid ? "\e[32m" : "\e[31m", CurSum.value(),
+				"\e[36m%s: %s\t\e[33m%08X\e[37m...%s%08X\t%s\e[0m\n",
+				CurEntry.SfvPath.c_str(), RelativePath.c_str(),
+				CurEntry.Checksum, Valid ? "\e[32m" : "\e[31m", CurSum.value(),
 				Valid ? "\e[32mOK" : "\e[31mFAIL");
 
 			if( Valid )
@@ -150,6 +159,7 @@ int CheckSFVs(const Settings& CurSettings)
 	std::vector<CheckEntry>  Checkqueue;
 	// Queue up all files to be checked
 
+	// Parse SFV file entries
 	std::string CurLine;
 	for( std::size_t InputIndex = 0; InputIndex < CurSettings.InputFiles.size();
 		 ++InputIndex )
@@ -196,6 +206,7 @@ int CheckSFVs(const Settings& CurSettings)
 			}
 			FilePath /= PathString;
 			Checkqueue.push_back(CheckEntry{
+				.SfvPath    = CurSfvPath,
 				.FilePath   = FilePath,
 				.InputIndex = InputIndex,
 				.Checksum   = CheckValue,
