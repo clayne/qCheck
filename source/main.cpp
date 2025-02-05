@@ -120,6 +120,14 @@ int main(int argc, char* argv[])
 
 	// Check for config errors here
 
+	// Recursive generation of sfv files is not implemented at the moment
+	// - Tue Feb  4 07:53:09 PM PST 2025
+	if( (!CurSettings.Check) && (CurSettings.Recursive) )
+	{
+		std::puts("Recursive generation not implemented.");
+		return EXIT_FAILURE;
+	}
+
 	for( std::intmax_t i = 0; i < argc; ++i )
 	{
 		const std::filesystem::path CurPath(argv[i]);
