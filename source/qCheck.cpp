@@ -18,6 +18,7 @@ const char* Usage
 	  "Usage: qCheck [Options]... [Files]...\n"
 	  "  -t, --threads            Number of checker threads in parallel\n"
 	  "  -c, --check              Verify all input as .sfv files\n"
+	  "  -r, --recursive          Recursively traverse subdirectories\n"
 	  "  -h, --help               Show this help message\n";
 
 static std::optional<std::uint32_t>

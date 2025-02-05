@@ -18,11 +18,13 @@ struct Settings
 
 extern const char* Usage;
 
-const static struct option CommandOptions[]
-	= {{"threads", required_argument, nullptr, 't'},
-	   {"check", no_argument, nullptr, 'c'},
-	   {"help", no_argument, nullptr, 'h'},
-	   {nullptr, no_argument, nullptr, '\0'}};
+const static struct option CommandOptions[] = {
+	{"threads", required_argument, nullptr, 't'},
+	{"check", no_argument, nullptr, 'c'},
+	{"recursive", no_argument, nullptr, 'r'},
+	{"help", no_argument, nullptr, 'h'},
+	{nullptr, no_argument, nullptr, '\0'},
+};
 
 int CheckSFVs(const Settings& CurSettings);
 int GenerateSFV(const Settings& CurSettings);
